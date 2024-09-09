@@ -5,7 +5,11 @@ import React, { useState } from "react";
 
 const UserForm = () => {
   const router = useRouter();
-  const [formData, setFromData] = useState({});
+  const [formData, setFromData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e) => {

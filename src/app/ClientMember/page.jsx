@@ -1,5 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 
 export default function ClientMember() {
@@ -9,12 +10,12 @@ export default function ClientMember() {
       redirect("/api/auth/signin?callbackUrl=/ClientMember");
     },
   });
-
   return (
     <>
       <h1 className="text-3xl font-bold">Client Member Server Session</h1>
       <p>{session?.user?.email}</p>
       <p>{session?.user?.role}</p>
+      <p>{session?.user?.name}</p>
     </>
   );
 }

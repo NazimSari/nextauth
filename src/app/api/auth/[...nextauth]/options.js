@@ -8,14 +8,10 @@ export const options = {
   providers: [
     GitHubProvider({
       profile(profile) {
-        console.log("profile Github", profile);
-        let userRole = "GitHub User";
-        if (profile?.email === process.env.ADMIN_EMAIL) {
-          userRole = "admin";
-        }
         return {
-          ...profile,
-          role: userRole,
+          id: profile.id,
+          name: profile.name,
+          email: profile.email,
         };
       },
       clientId: process.env.GITHUB_ID,
@@ -23,13 +19,10 @@ export const options = {
     }),
     GoogleProvider({
       profile(profile) {
-        console.log("profile Google", profile);
-        let userRole = "Google User";
-
         return {
-          ...profile,
           id: profile.sub,
-          role: userRole,
+          name: profile.name,
+          email: profile.email,
         };
       },
       clientId: process.env.GOOGLE_ID,
@@ -42,28 +35,18 @@ export const options = {
         email: { label: "email", type: "text" },
         password: { label: "password", type: "password" },
       },
-      async authorize(credentials, req) {
-        try {
-          const foundUser = await User.findOne({ email: credentials.email })
-            .lean()
-            .exec();
-          if (foundUser) {
-            console.log("User Exists");
-            const match = await bcrypt.compare(
-              credentials.password,
-              foundUser.password
-            );
-            if (match) {
-              console.log("Good pass");
-              delete foundUser.password;
-
-              foundUser["role"] = "Unverified Email";
-
-              return foundUser;
-            }
+      async authorize(credentials) {
+        const foundUser = await User.findOne({ email: credentials.email })
+          .lean()
+          .exec();
+        if (foundUser) {
+          const match = await bcrypt.compare(
+            credentials.password,
+            foundUser.password
+          );
+          if (match) {
+            return foundUser;
           }
-        } catch (error) {
-          console.log(error);
         }
         return null;
       },
@@ -71,12 +54,40 @@ export const options = {
   ],
 
   callbacks: {
+    async signIn({ user, profile, account }) {
+      const existingUser = await User.findOne({ email: user.email });
+      if (!existingUser) {
+        // Eğer kullanıcı veritabanında yoksa, onu kaydet
+        const newUser = new User({
+          email: user.email,
+          name: user.name || profile?.login,
+          avatar: profile?.avatar_url || "",
+          role: "user", // Varsayılan rol, isterseniz bunu değiştirebilirsiniz
+          provider: account?.provider || "credentials",
+        });
+        await newUser.save();
+      }
+      return true;
+    },
+
     async jwt({ token, user }) {
-      if (user) token.role = user.role;
+      if (user) {
+        // Kullanıcıyı veritabanında bul
+        const foundUser = await User.findOne({ email: user.email });
+
+        if (foundUser) {
+          // Kullanıcının rolünü token'a ekle
+          token.role = foundUser.role;
+        }
+      }
       return token;
     },
+
     async session({ session, token }) {
-      if (session?.user) session.user.role = token.role;
+      if (session?.user) {
+        session.user.role = token.role;
+        session.user.name = token.name;
+      }
       return session;
     },
   },

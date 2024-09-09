@@ -3,13 +3,16 @@ import { withAuth } from "next-auth/middleware";
 
 export default withAuth(
   function middleware(req) {
-    console.log(req.nextUrl.pathname);
-    console.log(req.nextauth.token.role);
+    const { pathname } = req.nextUrl;
+    const token = req.nextauth.token;
 
-    if (
-      req.nextUrl.pathname.startsWith("/CreateUser") &&
-      req.nextauth.token.role != "admin"
-    ) {
+    // Token veya rol yoksa kullanıcıyı reddet
+    if (!token || !token.role) {
+      return NextResponse.rewrite(new URL("/Denied", req.url));
+    }
+
+    // Yalnızca admin rolü olanlar CreateUser sayfasına erişebilir
+    if (pathname.startsWith("/CreateUser") && token.role !== "admin") {
       return NextResponse.rewrite(new URL("/Denied", req.url));
     }
   },
