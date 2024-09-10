@@ -54,20 +54,38 @@ export const options = {
   ],
 
   callbacks: {
+    // Kullanıcı giriş yaptığında tetiklenen callback
     async signIn({ user, profile, account }) {
+      // Kullanıcının email adresine göre veritabanında olup olmadığını kontrol et
       const existingUser = await User.findOne({ email: user.email });
-      if (!existingUser) {
-        // Eğer kullanıcı veritabanında yoksa, onu kaydet
-        const newUser = new User({
-          email: user.email,
-          name: user.name || profile?.login,
-          avatar: profile?.avatar_url || "",
-          role: "user", // Varsayılan rol, isterseniz bunu değiştirebilirsiniz
-          provider: account?.provider || "credentials",
-        });
-        await newUser.save();
+      if (account.provider === "google" || account.provider === "github") {
+        // OAuth (Google, GitHub) ile giriş yapılıyor
+        // Kullanıcı veritabanında yoksa, onu kaydet
+        if (!existingUser) {
+          const newUser = new User({
+            email: user.email,
+            name: user.name || profile?.login,
+            avatar: profile?.avatar_url || "",
+            role: "user", // Varsayılan rol
+            provider: account.provider,
+            isVerified: true, // OAuth sağlayıcılarında e-posta doğrulama gerekmiyor
+          });
+          await newUser.save();
+        }
+
+        return true; // OAuth kullanıcıları için girişe izin ver
       }
-      return true;
+      // E-posta ve şifre ile giriş yapılırken (credentials)
+      if (!existingUser) {
+        throw new Error("No account found with this email");
+      }
+
+      // Kullanıcı doğrulanmamışsa hata fırlat
+      if (!existingUser.isVerified) {
+        throw new Error("Please verify your email before logging in");
+      }
+
+      return true; // Girişe izin ver
     },
 
     async jwt({ token, user }) {
@@ -78,6 +96,7 @@ export const options = {
         if (foundUser) {
           // Kullanıcının rolünü token'a ekle
           token.role = foundUser.role;
+          token.isVerified = foundUser.isVerified;
         }
       }
       return token;
@@ -87,6 +106,7 @@ export const options = {
       if (session?.user) {
         session.user.role = token.role;
         session.user.name = token.name;
+        session.user.isVerified = token.isVerified;
       }
       return session;
     },

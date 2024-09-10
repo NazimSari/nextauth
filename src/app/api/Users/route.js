@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import User from "@/app/(models)/User";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { sendRegisterMail } from "@/helpers/sendRegisterMail";
 
 export async function POST(req) {
   try {
@@ -28,10 +30,30 @@ export async function POST(req) {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
     userData.password = hashedPassword;
 
-    const user = await User.create(userData);
+    const newUser = await User.create(userData);
+
+    // Doğrulama linki için JWT token oluştur
+    const token = jwt.sign({ email: newUser.email }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    // Doğrulama linki
+    const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/api/verify-email?token=${token}`;
+
+    // Kullanıcıya doğrulama maili gönder
+    await sendRegisterMail(
+      newUser.email,
+      "Verify your email",
+      `Please verify your email by clicking the following link: ${verifyUrl}`,
+      `<h1>Hello, ${newUser.name}</h1><p>Click <a href="${verifyUrl}">here</a> to verify your email and activate your account.</p>`
+    );
 
     return NextResponse.json(
-      { message: "User created successfully", user },
+      {
+        message:
+          "User created successfully. Please check your email to verify your account.",
+        user: newUser,
+      },
       { status: 201 }
     );
   } catch (error) {
