@@ -12,7 +12,7 @@ export default withAuth(
     }
 
     // Yalnızca admin rolü olanlar CreateUser sayfasına erişebilir
-    if (pathname.startsWith("/CreateUser") && token.role !== "admin") {
+    if (pathname.startsWith("/Public") && token.role !== "admin") {
       return NextResponse.rewrite(new URL("/Denied", req.url));
     }
   },
@@ -24,5 +24,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/CreateUser"],
+  matcher: ["/Public"],
 };

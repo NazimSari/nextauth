@@ -24,6 +24,9 @@ export default async function Nav() {
             <Link href="/Member">Member</Link>
           </li>
           <li className="mr-5 hover:underline">
+            <Link href="/ResetForm">Reset Password</Link>
+          </li>
+          <li className="mr-5 hover:underline">
             <Link href="/Public">Public</Link>
           </li>
         </ul>
