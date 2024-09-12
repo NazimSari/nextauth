@@ -52,15 +52,20 @@ export const options = {
       },
     }),
   ],
+  pages: {
+    signIn: "/auth/signin", // Kendi giriş sayfanızın yolu
+  },
 
   callbacks: {
     // Kullanıcı giriş yaptığında tetiklenen callback
     async signIn({ user, profile, account }) {
       // Kullanıcının email adresine göre veritabanında olup olmadığını kontrol et
       const existingUser = await User.findOne({ email: user.email });
+
       if (account.provider === "google" || account.provider === "github") {
         // OAuth (Google, GitHub) ile giriş yapılıyor
         // Kullanıcı veritabanında yoksa, onu kaydet
+
         if (!existingUser) {
           const newUser = new User({
             email: user.email,

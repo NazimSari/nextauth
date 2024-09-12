@@ -24,20 +24,31 @@ const ResetPasswordReq = () => {
   };
 
   return (
-    <div className="bg-slate-300 w-full max-w-6xl flex mx-auto mt-10 p-3">
-      <form onSubmit={handleSubmit}>
-        <label>Email:</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <button className="ml-5 hover:underline" type="submit">
-          Reset Password
-        </button>
-      </form>
-      {message && <p>{message}</p>}
+    <div className="w-full max-w-6xl flex flex-col mx-auto mt-10 p-3">
+      <div className="flex flex-col items-center justify-center p-3 bg-slate-300 max-w-3xl mx-auto rounded-2xl">
+        <p className="text-2xl font-semibold mb-8 p-3">
+          Yeni şifre almak için lütfen e-posta adresinizi girin.
+        </p>
+        <div>
+          <form className="flex flex-col" onSubmit={handleSubmit}>
+            <input
+              className="p-3 rounded-md mb-4"
+              type="email"
+              placeholder="E-posta adresinizi girin"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <button
+              className="p-2 border rounded-md bg-slate-100 hover:bg-slate-200 mb-2"
+              type="submit"
+            >
+              Şifrenizi Sıfırlayın
+            </button>
+          </form>
+          {message && <p>{message}</p>}
+        </div>
+      </div>
     </div>
   );
 };

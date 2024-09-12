@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { options } from "../../api/auth/[...nextauth]/options";
-import Link from "next/link";
 
 export default async function Nav() {
   const session = await getServerSession(options);
@@ -27,7 +27,7 @@ export default async function Nav() {
             <Link href="/ResetForm">Reset Password</Link>
           </li>
           <li className="mr-5 hover:underline">
-            <Link href="/Public">Public</Link>
+            <Link href="/Publictor">Publictor</Link>
           </li>
         </ul>
         {session ? (

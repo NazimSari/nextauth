@@ -30,7 +30,8 @@ export async function POST(req) {
       `<h1>Hello, ${user.name}</h1><p>Click <a href="${resetUrl}">here</a> to verify your email and activate your account.</p>`
     );
     return NextResponse.json({
-      message: "Password reset link sent to your email",
+      message:
+        "Şifre sıfırlama talebiniz e-posta adresinize gönderildi, lütfen gelen linke tıklayın ve yeni şifrenizi girin.",
     });
   } catch (error) {
     console.log("Error occurred:", error);
